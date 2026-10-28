@@ -2,17 +2,19 @@
 """visual-doc 조립 · 점검 도구 (표준 라이브러리만 사용)
 
   vdoc.py build --title "제목" --body body.html --out page.html [--css extra.css]
-  vdoc.py check page.html
+  vdoc.py check page.html | body.html
   vdoc.py serve page.html [--port 8765]
 
 serve 는 미리보기용 로컬 서버다. /__preview?w=390&theme=dark 가 페이지를 그 폭·테마로 iframe 에 띄운다.
 
 build 는 body 조각(.wrap 안쪽 내용)에 base.css · 아이콘 스프라이트 · 공용 스크립트를 붙여
 한 장짜리 HTML 을 만들고, 끝나면 check 를 돌린다. check 는 디자인 규칙 위반을 찾는다.
+check 에 body 조각을 주면 <title> 검사를 건너뛰고 기본 아이콘 스프라이트를 있는 것으로 본다.
 """
 from __future__ import annotations
 
 import argparse
+import html as htmllib
 import re
 import sys
 from html.parser import HTMLParser
@@ -68,7 +70,7 @@ def build(args) -> int:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>{args.title}</title>
+<title>{htmllib.escape(args.title, quote=False)}</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -103,12 +105,14 @@ class Scan(HTMLParser):
         self.stack = []          # (tag, classes)
         self.bentos = []         # 각 .bento 의 직계 tile 폭 목록
         self.lists = []          # (.flow/.roadmap, --n, li 수)
-        self.sections = []       # (classes, has_h2, has_eyebrow)
+        self.sections = []       # (classes, has_h2, has_eyebrow, 첫 컴포넌트)
         self.title = None
         self._in_title = False
         self.scripts, self.styles, self.icon_refs, self.icon_ids = [], [], set(), set()
         self.inline_styles = []
         self.bare_tables = 0
+        self.blocks = []         # 최상위 블록 순서: "hero" / "sec" / "start"
+        self.stages = []         # 각 .stage 안에 .ex 가 있는지
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
@@ -138,8 +142,17 @@ class Scan(HTMLParser):
         if {"flow", "roadmap"} & set(cls):
             m = re.search(r"--n:\s*(\d+)", a.get("style") or "")
             self.lists.append([("flow" if "flow" in cls else "roadmap"), int(m.group(1)) if m else 4, 0])
+        if tag == "header" and "hero" in cls:
+            self.blocks.append("hero")
         if tag == "section":
-            self.sections.append({"cls": cls, "h2": False, "eyebrow": False})
+            self.blocks.append("start" if "start" in cls else "sec")
+            self.sections.append({"cls": cls, "h2": False, "eyebrow": False, "comp": None})
+        if parent and parent[0] == "section" and self.sections[-1]["comp"] is None:
+            self.sections[-1]["comp"] = next((c for c in cls if c in COMPONENTS), None)
+        if "stage" in cls:
+            self.stages.append(False)
+        elif "ex" in cls and any("stage" in c for _, c in self.stack):
+            self.stages[-1] = True
         if self.sections and self._inside("section"):
             if tag == "h2":
                 self.sections[-1]["h2"] = True
@@ -166,19 +179,67 @@ class Scan(HTMLParser):
             self.title = (self.title or "") + data
 
 
-HEX = re.compile(r"#[0-9a-fA-F]{3,8}\b|rgba?\(\s*\d")
+# 섹션의 주 컴포넌트 (섹션 직계 자식의 클래스로 판별)
+COMPONENTS = {"flow", "bento", "stats", "callout", "layers", "pipe", "tbl-wrap", "api", "term", "compare",
+              "decs", "scope", "roadmap", "checks", "faq"}
+
+# 색 값을 직접 쓴 흔적. 선택자(#id)는 보지 않도록 선언 값에만 적용한다
+RAW_COLOR = re.compile(
+    r"#[0-9a-fA-F]{3,8}\b"
+    r"|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\("
+    r"|\b(?:white|black|red|green|blue|gray|grey|yellow|orange|purple|pink|brown|navy|teal|silver"
+    r"|maroon|olive|lime|aqua|cyan|magenta|fuchsia|gold|indigo|violet)\b", re.I)
+
+
+def raw_colors_in_decls(decls: str) -> list[str]:
+    """`prop: value; …` 문자열에서 값 쪽의 직접 색만 찾는다 (사용자 정의 속성 --x 는 토큰 정의라 제외)."""
+    hits = []
+    for decl in re.sub(r'"[^"]*"|\'[^\']*\'', "", decls).split(";"):
+        prop, sep, value = decl.partition(":")
+        if sep and not prop.strip().startswith("--"):
+            hits += [m.group(0) for m in RAW_COLOR.finditer(value)]
+    return hits
+
+
+def dark_token_drift(css: str) -> bool:
+    """base.css 의 다크 토큰 두 벌(prefers-color-scheme · data-theme=dark)이 서로 다른지."""
+    media = re.search(r'@media \(prefers-color-scheme: dark\)\s*\{\s*:root:not\(\[data-theme="light"\]\)\s*\{([^}]*)\}', css)
+    attr = re.search(r':root\[data-theme="dark"\]\s*\{([^}]*)\}', css)
+    if not (media and attr):
+        return False
+    norm = lambda body: sorted(d.strip() for d in body.split(";") if d.strip())
+    return norm(media.group(1)) != norm(attr.group(1))
 
 
 def check_file(path: Path, base_css: str | None = None) -> int:
     html = Path(path).read_text(encoding="utf-8")
+    is_page = re.search(r"<html[\s>]", html, flags=re.I) is not None
     s = Scan()
     s.feed(html)
     errors, warns = [], []
 
-    if not s.title or not s.title.strip():
+    if not is_page:
+        # body 조각: build 가 붙일 기본 스프라이트를 있는 것으로 본다
+        s.icon_ids |= set(re.findall(r'<symbol id="(i-[\w-]+)"', (ASSETS / "icons.svg").read_text(encoding="utf-8")))
+    elif not s.title or not s.title.strip():
         errors.append("<title> 이 없어요")
     elif len(s.title.split()) > 4:
         warns.append(f"<title> 은 2~4 단어 이름으로 써요: '{s.title.strip()}'")
+
+    if "start" not in s.blocks:
+        errors.append("마지막에 .start 블록(다음 행동)이 없어요")
+    elif s.blocks[-1] != "start":
+        errors.append(".start 블록은 맨 마지막에 둬요")
+    body_secs = s.blocks.count("sec")
+    if s.blocks and not 2 <= body_secs <= 8:
+        warns.append(f"본문 섹션이 {body_secs} 개예요 (히어로와 start 사이 2~8개)")
+    comps = [sec["comp"] for sec in s.sections if "start" not in sec["cls"]]
+    for i in range(len(comps) - 2):
+        if comps[i] and comps[i] == comps[i + 1] == comps[i + 2]:
+            warns.append(f"같은 컴포넌트(.{comps[i]})가 섹션 3개 연속이에요 — 모양이 다른 컴포넌트를 섞어요")
+            break
+    if not all(s.stages):
+        errors.append('화면 모형(.stage)에 <span class="ex">예시 화면이에요</span> 가 없어요')
 
     for i, widths in enumerate(s.bentos, 1):
         if None in widths:
@@ -222,16 +283,19 @@ def check_file(path: Path, base_css: str | None = None) -> int:
     if missing:
         errors.append(f"스프라이트에 없는 아이콘: {sorted(missing)}")
 
-    raw_colors = [st for st in s.inline_styles if HEX.search(st)]
+    raw_colors = [st for st in s.inline_styles if raw_colors_in_decls(st)]
     if raw_colors:
         errors.append(f"인라인 style 에 색 값을 직접 썼어요 (토큰을 써요): {raw_colors[:3]}")
     if base_css is not None:
         styles = re.findall(r"<style>(.*?)</style>", html, flags=re.S)
         extra = "".join(styles).replace(base_css, "")
+        extra = re.sub(r"/\*.*?\*/", "", extra, flags=re.S)
         extra = re.sub(r":root\s*\{[^}]*\}", "", extra)
-        hits = [m.group(0) for m in HEX.finditer(extra)]
+        hits = [h for block in re.findall(r"\{([^{}]*)\}", extra) for h in raw_colors_in_decls(block)]
         if hits:
             errors.append(f"전용 CSS 에 색 값을 직접 썼어요 (토큰을 써요): {hits[:5]}")
+        if dark_token_drift(base_css):
+            errors.append("base.css 의 다크 토큰 두 벌(prefers-color-scheme · data-theme=dark)이 서로 달라요")
 
     if s.bare_tables:
         warns.append("표는 .tbl-wrap 으로 감싸야 좁은 화면에서 가로 스크롤이 표 안에서만 생겨요")

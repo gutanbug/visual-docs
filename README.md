@@ -30,9 +30,15 @@ In Claude Code:
 Or just ask: "이 기획 내용을 아티팩트로 깔끔하게 정리해줘".
 The page is written to `./visual-doc/<slug>/page.html` and published as an Artifact when the `Artifact` tool is available.
 
-## Example
+## Examples
 
-[`examples/visual-docs`](examples/visual-docs) was generated with this plugin.
+| Page | Source (body) |
+|---|---|
+| [visual-docs intro](https://gutanbug.github.io/visual-docs/) | [`examples/visual-docs/body.html`](examples/visual-docs/body.html) |
+| [Wiki intro](https://gutanbug.github.io/visual-docs/intro.html) | [`intro.body.html`](plugins/visual-doc/skills/visual-doc/examples/intro.body.html) |
+| [Notification design](https://gutanbug.github.io/visual-docs/design.html) | [`design.body.html`](plugins/visual-doc/skills/visual-doc/examples/design.body.html) |
+
+Rendered pages live in [`docs/`](docs) (GitHub Pages); only the body fragments ship with the plugin.
 
 <details>
 <summary>Full page (dark)</summary>
@@ -45,11 +51,23 @@ The page is written to `./visual-doc/<slug>/page.html` and published as an Artif
 
 ```bash
 python3 vdoc.py build --title "Notify design" --body body.html --out page.html [--css extra.css]
-python3 vdoc.py check page.html
+python3 vdoc.py check page.html        # or a body.html fragment
 python3 vdoc.py serve page.html --port 8765
 ```
 
-`check` catches missing titles, bento rows that don't sum to 6, flow/roadmap count mismatches, unknown icons, raw color values, disallowed external assets and unwrapped tables.
+`check` catches missing titles, bento rows that don't sum to 6, flow/roadmap count mismatches, missing eyebrow/h2,
+the same component three sections in a row, body section count outside 2–8, a hero mock without its "example" label,
+a missing or misplaced `.start` block, unknown icons, raw color values (hex, `rgb()`/`hsl()`/`oklch()`…, named colors),
+disallowed external assets and unwrapped tables.
+
+To rebuild the demo pages after changing `base.css`:
+
+```bash
+S=plugins/visual-doc/skills/visual-doc
+python3 $S/scripts/vdoc.py build --title "visual-docs 소개" --body examples/visual-docs/body.html --out docs/index.html
+python3 $S/scripts/vdoc.py build --title "사내 지식 wiki 소개" --body $S/examples/intro.body.html --out docs/intro.html
+python3 $S/scripts/vdoc.py build --title "알림 서비스 설계" --body $S/examples/design.body.html --out docs/design.html
+```
 
 ## License
 
