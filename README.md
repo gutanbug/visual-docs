@@ -2,7 +2,7 @@
 
 A Claude Code plugin that turns plans, designs, reports and guides into a clean one-page visual document (HTML Artifact).
 
-![visual-docs preview](docs/preview-light.png)
+![visual-docs demo](docs/demo.gif)
 
 **[Live demo →](https://gutanbug.github.io/visual-docs/)**
 
