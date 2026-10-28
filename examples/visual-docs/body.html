@@ -1,0 +1,108 @@
+  <header class="hero">
+    <div class="hero-text">
+      <span class="badge-line rise"><i></i>Claude Code 플러그인 · visual-docs</span>
+      <h1 class="rise d1">내용만 넘기면<br><em>한 장짜리 시각 문서</em>로<br>정리해요</h1>
+      <p class="lead rise d2">기획 · 설계 · 소개 · 보고 · 가이드 내용을 같은 디자인 언어의 HTML 한 장으로 만들어요. 컴포넌트를 골라 채우고, 스크립트가 규칙을 점검해요.</p>
+      <div class="hero-tags rise d3"><span class="tag">라이트 · 다크</span><span class="tag">모바일 대응</span><span class="tag">외부 의존 없음</span><span class="tag">Python 표준 라이브러리</span></div>
+    </div>
+    <div class="stage rise d2" aria-label="조립 결과 예시">
+      <div class="mock">
+        <div class="mock-bar"><i></i><i></i><i></i></div>
+        <div class="mock-body">
+          <div class="r-head"><b>vdoc.py build</b><span class="pill ok">통과</span></div>
+          <div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+            <div class="stat"><span class="k">ERROR</span><span class="v">0</span></div>
+            <div class="stat"><span class="k">WARN</span><span class="v">0</span></div>
+          </div>
+          <div class="result">
+            <div class="fact"><span class="t">벤토 한 줄 합 = 6</span><span class="pill ok">확인</span><span class="m">check · bento</span></div>
+            <div class="fact"><span class="t">직접 쓴 색 값 없음</span><span class="pill ok">확인</span><span class="m">check · tokens</span></div>
+            <div class="fact"><span class="t">표는 .tbl-wrap 안에</span><span class="pill ok">확인</span><span class="m">check · table</span></div>
+          </div>
+        </div>
+      </div>
+      <span class="ex">예시 화면이에요</span>
+    </div>
+  </header>
+
+  <section class="sec wide" aria-labelledby="flow-t">
+    <div class="sec-head">
+      <span class="eyebrow">흐름</span>
+      <h2 id="flow-t">요청하면 고르고, 채우고, 점검해서 내보내요</h2>
+    </div>
+    <ol class="flow" style="--n:4">
+      <li><div class="node"><svg class="i"><use href="#i-chat"/></svg></div><span class="n">01</span><b>요청</b><span class="d">메모 · 문서 · URL 무엇이든</span></li>
+      <li><div class="node"><svg class="i"><use href="#i-layers"/></svg></div><span class="n">02</span><b>구성 고르기</b><span class="d">문서 유형별 섹션 순서</span></li>
+      <li><div class="node"><svg class="i"><use href="#i-code"/></svg></div><span class="n">03</span><b>조립 · 점검</b><span class="d">vdoc.py build 와 check</span></li>
+      <li><div class="node"><svg class="i"><use href="#i-rocket"/></svg></div><span class="n">04</span><b>내보내기</b><span class="d">page.html 또는 Artifact</span></li>
+    </ol>
+  </section>
+
+  <section class="sec" aria-labelledby="comp-t">
+    <div class="sec-head">
+      <span class="eyebrow">컴포넌트</span>
+      <h2 id="comp-t">새 스타일을 만들지 않고, 정해진 조각을 골라 채워요</h2>
+    </div>
+    <div class="bento">
+      <div class="tile w4"><div class="t-ic"><svg class="i"><use href="#i-layers"/></svg></div><h3>구조도</h3><p class="d">계층과 모듈 구성을 층으로 보여 줘요. 바뀌는 부분만 파랗게 표시해요.</p>
+        <div class="demo"><div class="steps">
+          <div class="step"><span class="dot"><svg class="i"><use href="#i-check"/></svg></span><span>호출하는 쪽</span></div>
+          <div class="step now"><span class="dot"></span><span>새로 만드는 서비스</span></div>
+          <div class="step todo"><span class="dot"></span><span>외부 채널</span></div>
+        </div></div></div>
+      <div class="tile w2"><div class="t-ic"><svg class="i"><use href="#i-chart"/></svg></div><h3>숫자</h3><p class="d">핵심 수치 2~4개를 크게 보여 줘요.</p>
+        <div class="demo"><div class="roles"><span class="pill blue">99.5%</span><span class="pill ok">+12</span><span class="pill warn">3건</span></div></div></div>
+      <div class="tile w2"><div class="t-ic"><svg class="i"><use href="#i-file"/></svg></div><h3>표 · API</h3><p class="d">필드 · 엔드포인트 목록을 읽기 좋게 정리해요.</p>
+        <div class="demo"><div class="ranks"><div class="rank"><b>GET /items</b><span class="pill grey">목록</span></div></div></div></div>
+      <div class="tile w2"><div class="t-ic"><svg class="i"><use href="#i-flag"/></svg></div><h3>결정</h3><p class="d">확정과 결정 필요를 배지로 나눠요.</p>
+        <div class="demo"><div class="roles"><span class="pill ok">확정</span><span class="pill warn">결정 필요</span></div></div></div>
+      <div class="tile w2"><div class="t-ic"><svg class="i"><use href="#i-cal"/></svg></div><h3>로드맵</h3><p class="d">주차별 계획과 진행 상태를 보여 줘요.</p>
+        <div class="demo"><div class="roles"><span class="pill ok">W1</span><span class="pill blue">W2</span><span class="pill grey">W3</span></div></div></div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="type-t">
+    <div class="sec-head">
+      <span class="eyebrow">문서 유형</span>
+      <h2 id="type-t">다섯 가지 유형마다 섹션 순서가 정해져 있어요</h2>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>유형</th><th>원문이 주로 말하는 것</th><th>섹션 순서</th></tr></thead>
+        <tbody>
+          <tr><td>소개</td><td>무엇인지, 어떻게 쓰는지</td><td>히어로 → 흐름 → 기능 → 시작</td></tr>
+          <tr><td>기획</td><td>왜 하는지, 범위 · 일정</td><td>배경 → 범위 → 흐름 → 일정 → 결정</td></tr>
+          <tr><td>설계</td><td>구조 · 데이터 · API · 결정</td><td>구조 → 흐름 → 데이터 → API → 결정</td></tr>
+          <tr><td>보고</td><td>한 일과 결과, 다음 할 일</td><td>결과 → 한 일 → 문제 · 조치</td></tr>
+          <tr><td>가이드</td><td>따라 하는 순서 · 명령</td><td>준비물 → 단계 → 문제 해결</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="check-t">
+    <div class="sec-head">
+      <span class="eyebrow">점검</span>
+      <h2 id="check-t">조립할 때마다 스크립트가 규칙을 확인해요</h2>
+    </div>
+    <ul class="checks">
+      <li class="on"><span><b>제목</b> &lt;title&gt; 이 있고 짧아요</span></li>
+      <li class="on"><span><b>벤토</b> 한 줄 합이 6 이에요</span></li>
+      <li class="on"><span><b>흐름 · 로드맵</b> --n 이 항목 수와 같아요</span></li>
+      <li class="on"><span><b>아이콘</b> 없는 아이콘을 가리키지 않아요</span></li>
+      <li class="on"><span><b>색</b> 토큰만 쓰고 직접 쓴 색 값이 없어요</span></li>
+      <li class="on"><span><b>외부 자원</b> 허용한 CDN · 폰트만 써요</span></li>
+    </ul>
+  </section>
+
+  <section class="start" aria-labelledby="go-t">
+    <div>
+      <h2 id="go-t">두 줄로 설치해 바로 써 보세요</h2>
+      <p class="sub">Claude Code 안에서 실행해요.</p>
+    </div>
+    <div class="start-list">
+      <div class="s-item"><span class="k">마켓플레이스 추가</span><div class="cmd"><code id="c1">/plugin marketplace add gutanbug/visual-docs</code><button class="copy" type="button" data-copy="c1">복사</button></div></div>
+      <div class="s-item"><span class="k">플러그인 설치</span><div class="cmd"><code id="c2">/plugin install visual-doc@visual-docs</code><button class="copy" type="button" data-copy="c2">복사</button></div></div>
+      <div class="s-item"><span class="k">사용</span><div class="cmd"><code id="c3">/visual-doc:make 이 기획 내용을 한 장으로 정리해줘</code><button class="copy" type="button" data-copy="c3">복사</button></div></div>
+    </div>
+  </section>

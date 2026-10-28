@@ -1,0 +1,160 @@
+  <header class="hero">
+    <div class="hero-text">
+      <span class="badge-line rise"><i></i>설계 문서 · v1.2</span>
+      <h1 class="rise d1">알림을 한 곳에서 보내고<br><em>실패해도 다시 보내요</em></h1>
+      <p class="lead rise d2">서비스마다 따로 보내던 메일·메신저 알림을 알림 서비스 하나로 모아요. 발송은 큐로 넘겨 비동기로 처리하고, 실패한 건은 정해진 횟수만큼 다시 보내요.</p>
+      <div class="meta-row rise d3"><span>작성 <b>플랫폼팀</b></span><span>검토 <b>2026-10-20</b></span><span>상태 <b>리뷰 중</b></span></div>
+      <nav class="toc rise d3" aria-label="목차"><a href="#arch-t">구조</a><a href="#flow-t">처리 흐름</a><a href="#data-t">데이터</a><a href="#api-t">API</a><a href="#dec-t">결정</a><a href="#plan-t">일정</a></nav>
+    </div>
+
+    <div class="stage rise d2" aria-label="발송 현황 예시">
+      <div class="mock">
+        <div class="mock-bar"><i></i><i></i><i></i></div>
+        <div class="mock-body">
+          <div class="r-head"><b>오늘 발송</b><span class="pill blue">실시간</span></div>
+          <div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+            <div class="stat"><span class="k">요청</span><span class="v">12,480</span></div>
+            <div class="stat"><span class="k">성공률</span><span class="v">99.2<small>%</small></span></div>
+          </div>
+          <div class="result">
+            <div class="fact"><span class="t">메일 · 배포 완료 안내</span><span class="pill ok">성공</span><span class="m">10:02:11 · 1회 만에</span></div>
+            <div class="fact"><span class="t">메신저 · 장애 알림</span><span class="pill warn">재시도 2/3</span><span class="m">10:02:40 · 다음 시도 30초 뒤</span></div>
+          </div>
+        </div>
+      </div>
+      <span class="ex">예시 화면이에요</span>
+    </div>
+  </header>
+
+  <section class="sec" aria-labelledby="why-t">
+    <div class="sec-head">
+      <span class="eyebrow">배경</span>
+      <h2 id="why-t">지금은 서비스마다 따로 보내서 놓치는 알림이 생겨요</h2>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="k">알림을 직접 보내는 서비스</span><span class="v">7<small>개</small></span><span class="s">발송 코드가 7벌이에요</span></div>
+      <div class="stat"><span class="k">지난달 발송 실패</span><span class="v">1,320<small>건</small></span><span class="delta down">재시도 없음</span></div>
+      <div class="stat hl"><span class="k">목표 성공률</span><span class="v">99.5<small>%</small></span><span class="s">재시도 포함</span></div>
+    </div>
+    <div class="callout warn"><svg class="i"><use href="#i-alert"/></svg><div><b>실패를 아무도 몰라요</b><p>메신저 API 가 잠깐 막히면 그 시간의 알림이 그대로 사라지고, 로그에만 남아요.</p></div></div>
+  </section>
+
+  <section class="sec" aria-labelledby="arch-t">
+    <div class="sec-head">
+      <span class="eyebrow">구조</span>
+      <h2 id="arch-t">요청은 받기만 하고, 보내기는 워커가 해요</h2>
+      <p>파란 테두리가 이번에 만드는 부분이에요.</p>
+    </div>
+    <div class="layers">
+      <div class="layer"><span class="k">호출하는 쪽<small>callers</small></span><div class="boxes"><span class="box">배포 서비스</span><span class="box">모니터링</span><span class="box">결재</span><span class="box">스케줄러</span></div></div>
+      <div class="layer-arrow"><svg class="i"><use href="#i-down"/></svg></div>
+      <div class="layer"><span class="k">알림 서비스<small>notify-api</small></span><div class="boxes"><span class="box hl new"><svg class="i sm"><use href="#i-plug"/></svg>발송 API</span><span class="box hl new">템플릿 관리</span><span class="box">인증 게이트웨이</span></div></div>
+      <div class="layer-arrow"><svg class="i"><use href="#i-down"/></svg></div>
+      <div class="layer"><span class="k">처리<small>queue · worker</small></span><div class="boxes"><span class="box"><svg class="i sm"><use href="#i-layers"/></svg>메시지 큐</span><span class="box hl new">발송 워커 <code>×3</code></span><span class="box hl new">재시도 스케줄러</span></div></div>
+      <div class="layer-arrow"><svg class="i"><use href="#i-down"/></svg></div>
+      <div class="layer"><span class="k">외부 채널<small>channels</small></span><div class="boxes"><span class="box">SMTP</span><span class="box">메신저 Webhook</span><span class="box">SMS 게이트웨이</span></div></div>
+    </div>
+  </section>
+
+  <section class="sec wide" aria-labelledby="flow-t">
+    <div class="sec-head">
+      <span class="eyebrow">처리 흐름</span>
+      <h2 id="flow-t">받고, 쌓고, 보내고, 실패하면 다시 보내요</h2>
+    </div>
+    <ol class="flow" style="--n:4">
+      <li><div class="node"><svg class="i"><use href="#i-plug"/></svg></div><span class="n">01</span><b>요청 받기</b><span class="d">템플릿과 값을 검증하고 202로 바로 답해요</span></li>
+      <li><div class="node"><svg class="i"><use href="#i-layers"/></svg></div><span class="n">02</span><b>큐에 쌓기</b><span class="d">채널별 큐에 넣고 상태를 대기로 남겨요</span></li>
+      <li><div class="node"><svg class="i"><use href="#i-rocket"/></svg></div><span class="n">03</span><b>발송</b><span class="d">워커가 꺼내 채널로 보내고 결과를 적어요</span></li>
+      <li><div class="node"><svg class="i"><use href="#i-history"/></svg></div><span class="n">04</span><b>재시도</b><span class="d">30초·2분·10분 뒤 최대 3번 다시 보내요</span></li>
+    </ol>
+  </section>
+
+  <section class="sec" aria-labelledby="data-t">
+    <div class="sec-head">
+      <span class="eyebrow">데이터</span>
+      <h2 id="data-t">발송 한 건이 행 하나예요</h2>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>컬럼</th><th>타입</th><th>설명</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">id</td><td class="mono">bigint</td><td>발송 ID, 자동 증가</td></tr>
+          <tr><td class="mono">channel</td><td class="mono">varchar(16)</td><td><code>MAIL</code> · <code>MESSENGER</code> · <code>SMS</code></td></tr>
+          <tr><td class="mono">status</td><td class="mono">varchar(16)</td><td>대기 · 성공 · 재시도 · 실패</td></tr>
+          <tr><td class="mono">attempts</td><td class="mono">tinyint</td><td>보낸 횟수, 3이 넘으면 실패로 끝내요</td></tr>
+          <tr><td class="mono">next_at</td><td class="mono">datetime</td><td>다음 재시도 시각</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="api-t">
+    <div class="sec-head">
+      <span class="eyebrow">API</span>
+      <h2 id="api-t">보내기 하나, 조회 둘이에요</h2>
+    </div>
+    <div class="api">
+      <div class="api-row"><span class="mth post">POST</span><code>/api/v1/notifications</code><span class="d">발송 요청, 202 와 발송 ID 를 돌려줘요</span></div>
+      <div class="api-row"><span class="mth get">GET</span><code>/api/v1/notifications/{id}</code><span class="d">한 건의 상태와 시도 기록</span></div>
+      <div class="api-row"><span class="mth get">GET</span><code>/api/v1/notifications?status=FAILED</code><span class="d">실패 목록, 페이지로 나눠요</span></div>
+      <div class="api-row"><span class="mth delete">DELETE</span><code>/api/v1/templates/{code}</code><span class="d">템플릿 삭제, 쓰는 곳이 있으면 409</span></div>
+    </div>
+    <pre class="term"><span class="c"># 요청 예시</span>
+<span class="p">curl</span> -X POST /api/v1/notifications \
+  -d '{"channel":"MAIL","template":"DEPLOY_DONE","to":["dev@example.com"]}'</pre>
+  </section>
+
+  <section class="sec" aria-labelledby="dec-t">
+    <div class="sec-head">
+      <span class="eyebrow">결정</span>
+      <h2 id="dec-t">큐는 이미 운영 중인 브로커를 써요</h2>
+    </div>
+    <div class="compare">
+      <div class="opt pick"><div class="head"><h3>기존 브로커</h3><span class="pill blue">채택</span></div>
+        <ul class="pc"><li class="pro">운영 경험과 모니터링이 이미 있어요</li><li class="pro">추가 비용이 없어요</li><li class="con">채널별 우선순위는 직접 나눠야 해요</li></ul></div>
+      <div class="opt"><div class="head"><h3>DB 폴링</h3><span class="pill grey">보류</span></div>
+        <ul class="pc"><li class="pro">구성이 가장 단순해요</li><li class="con">발송량이 늘면 DB 부하가 커져요</li></ul></div>
+      <div class="opt"><div class="head"><h3>관리형 큐</h3><span class="pill grey">보류</span></div>
+        <ul class="pc"><li class="pro">확장을 신경 쓰지 않아도 돼요</li><li class="con">사내망 밖으로 나가야 해요</li></ul></div>
+    </div>
+    <div class="decs">
+      <div class="dec"><span class="id">D-01</span><div><b>재시도는 최대 3번</b><p>그 뒤엔 실패로 끝내고 담당자에게 알려요.</p></div><span class="pill ok">확정</span></div>
+      <div class="dec"><span class="id">D-02</span><div><b>템플릿은 서비스가 아니라 알림 서비스가 가져요</b><p>문구 수정에 배포가 필요 없게 해요.</p></div><span class="pill ok">확정</span></div>
+      <div class="dec"><span class="id">D-03</span><div><b>SMS 비용 한도</b><p>월 한도와 넘었을 때 동작을 정해야 해요.</p></div><span class="pill warn">결정 필요</span></div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="plan-t">
+    <div class="sec-head">
+      <span class="eyebrow">일정</span>
+      <h2 id="plan-t">4주 동안 채널을 하나씩 옮겨요</h2>
+    </div>
+    <ol class="roadmap" style="--n:4">
+      <li class="done"><span class="when">W1 · 10/06</span><b>API · 큐</b><ul><li>발송 API</li><li>상태 테이블</li></ul></li>
+      <li class="now"><span class="when">W2 · 10/13</span><b>메일 이관</b><ul><li>SMTP 워커</li><li>배포 서비스 전환</li></ul></li>
+      <li><span class="when">W3 · 10/20</span><b>메신저 이관</b><ul><li>Webhook 워커</li><li>재시도 스케줄러</li></ul></li>
+      <li><span class="when">W4 · 10/27</span><b>SMS · 정리</b><ul><li>비용 한도</li><li>옛 발송 코드 삭제</li></ul></li>
+    </ol>
+  </section>
+
+  <section class="sec" aria-labelledby="faq-t">
+    <div class="sec-head">
+      <span class="eyebrow">자주 묻는 것</span>
+      <h2 id="faq-t">옮기기 전에 확인해요</h2>
+    </div>
+    <div class="faq">
+      <details open><summary>기존 발송 코드는 언제 지워요?</summary><div>채널 하나가 2주 동안 문제없이 돌면 그 채널의 옛 코드를 지워요.</div></details>
+      <details><summary>발송 순서가 보장돼요?</summary><div>채널 안에서는 요청 순서대로 보내지만, 재시도한 건은 뒤로 밀려요.</div></details>
+    </div>
+  </section>
+
+  <section class="start" aria-labelledby="next-t">
+    <div>
+      <h2 id="next-t">다음 리뷰 전에 정해 주세요</h2>
+      <p class="sub">D-03 이 정해져야 W4 작업을 시작할 수 있어요.</p>
+    </div>
+    <div class="start-list">
+      <div class="s-item"><span class="k">결정 필요 · D-03</span><span class="t">SMS 월 비용 한도와 초과 시 동작</span></div>
+      <div class="s-item"><span class="k">리뷰</span><span class="t">2026-10-29 (목) 플랫폼팀 정기 회의</span></div>
+    </div>
+  </section>

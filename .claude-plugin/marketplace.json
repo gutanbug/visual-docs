@@ -1,0 +1,21 @@
+{
+  "name": "visual-docs",
+  "owner": {
+    "name": "gutanbug",
+    "url": "https://github.com/gutanbug"
+  },
+  "metadata": {
+    "description": "Turn plans, designs and reports into clean one-page visual documents (HTML Artifacts).",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "visual-doc",
+      "source": "./plugins/visual-doc",
+      "description": "Builds one-page HTML documents with a single design language: generous whitespace, gray hierarchy, one blue accent, rounded surfaces.",
+      "version": "1.0.0",
+      "category": "productivity",
+      "tags": ["artifact", "html", "document", "design", "one-pager", "korean"]
+    }
+  ]
+}

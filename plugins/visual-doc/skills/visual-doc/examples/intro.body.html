@@ -1,0 +1,149 @@
+  <header class="hero">
+    <div class="hero-text">
+      <span class="badge-line rise"><i></i>사내 지식 서비스</span>
+      <h1 class="rise d1">팀 자료를 올리면<br><em>Claude가 wiki로</em> 정리해요</h1>
+      <p class="lead rise d2">회의록과 설계 문서를 주제별 문서로 모으고, 사실마다 출처와 시점을 붙여 둬요. 정리된 지식은 웹 화면과 Claude Code에서 바로 찾아 써요.</p>
+      <div class="hero-tags rise d3"><span class="tag">자동 정리</span><span class="tag">오타에도 강한 검색</span><span class="tag">AI 질문</span><span class="tag">Claude Code 연결</span></div>
+    </div>
+
+    <div class="stage rise d2" aria-label="검색 화면 예시">
+      <div class="mock">
+        <div class="mock-bar"><i></i><i></i><i></i></div>
+        <div class="mock-body">
+          <div class="search"><svg class="i"><use href="#i-search"/></svg><b>o11y 수집주기</b><span class="caret"></span></div>
+          <div class="result">
+            <div class="r-head"><b>o11y-agent</b><span class="pill blue">정리된 문서</span><span class="pill grey">#메트릭 수집</span></div>
+            <p style="font-size:14px;color:var(--fg-2)">노드 지표를 모아 수집 서버로 보내는 에이전트예요.</p>
+            <div class="fact"><span class="t">수집 주기는 60초예요</span><span class="ghost">틀렸어요</span><span class="m">since 2026-09 · 출처: 9월 운영 회의록</span></div>
+            <div class="fact"><span class="t">DaemonSet으로 모든 노드에 떠요</span><span class="pill warn">충돌</span><span class="m">자료 2건이 서로 다르게 말해요</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="float">
+        <span class="q"><svg class="i sm"><use href="#i-chat"/></svg>AI에게 묻기</span>
+        <span>수집 주기는 60초예요. 9월 회의에서 30초에서 바꿨어요. <u>o11y-agent</u></span>
+      </div>
+      <span class="ex">예시 화면이에요</span>
+    </div>
+  </header>
+
+  <section class="sec wide" aria-labelledby="flow-t">
+    <div class="sec-head">
+      <span class="eyebrow">흐름</span>
+      <h2 id="flow-t">올리면 확인하고, 정리하고, 바로 찾아요</h2>
+    </div>
+    <ol class="flow" style="--n:4">
+      <li><div class="node"><svg class="i"><use href="#i-up"/></svg></div><span class="n">01</span><b>자료 올리기</b><span class="d">파일·직접 입력·Confluence 주소로 올려요</span></li>
+      <li><div class="node"><svg class="i"><use href="#i-shield"/></svg></div><span class="n">02</span><b>admin 승인</b><span class="d">확인한 자료만 정리 대상이 돼요</span></li>
+      <li><div class="node"><svg class="i"><use href="#i-spark"/></svg></div><span class="n">03</span><b>Claude가 정리</b><span class="d">매시 정각, 기존 문서에 더하고 고쳐요</span></li>
+      <li><div class="node"><svg class="i"><use href="#i-search"/></svg></div><span class="n">04</span><b>찾고 묻기</b><span class="d">웹 검색·AI 질문·Claude Code에서 써요</span></li>
+    </ol>
+  </section>
+
+  <section class="sec" aria-labelledby="feat-t">
+    <div class="sec-head">
+      <span class="eyebrow">기능</span>
+      <h2 id="feat-t">쓰는 사람도, 관리하는 사람도 편하게</h2>
+      <p>아래 화면 조각은 실제 서비스 화면을 줄여 보여 주는 예시예요.</p>
+    </div>
+
+    <div class="bento">
+      <article class="tile w3">
+        <div class="t-ic"><svg class="i"><use href="#i-up"/></svg></div>
+        <h3>자료 올리기와 정정</h3>
+        <p class="d">파일을 끌어다 놓거나 Confluence 주소만 붙이면 돼요. 틀린 내용은 문서에서 바로 정정을 올려요. 개인정보는 가려서 Claude에게 넘겨요.</p>
+        <div class="demo"><div class="drop"><svg class="i"><use href="#i-up"/></svg>여기에 파일을 끌어다 놓아요<div class="exts"><span class="ext">.pdf</span><span class="ext">.docx</span><span class="ext">.md</span><span class="ext">.html</span><span class="ext">.txt</span><span class="ext">Confluence</span></div></div></div>
+      </article>
+
+      <article class="tile w3">
+        <div class="t-ic"><svg class="i"><use href="#i-shield"/></svg></div>
+        <h3>승인한 자료만 정리돼요</h3>
+        <p class="d">admin이 승인·수정 요청·거절 중에서 골라요. 문서 종류와 작성 기준은 정리 규칙으로 정하고, 판단이 어려운 자료는 보류해 둬요.</p>
+        <div class="demo steps">
+          <div class="step"><span class="dot"><svg class="i"><use href="#i-check"/></svg></span><span>자료를 올렸어요</span><small>10:12</small></div>
+          <div class="step"><span class="dot"><svg class="i"><use href="#i-check"/></svg></span><span>admin이 승인했어요</span><small>10:30</small></div>
+          <div class="step now"><span class="dot"></span><span>Claude가 정리하고 있어요</span><small>11:00</small></div>
+        </div>
+      </article>
+
+      <article class="tile w4">
+        <div class="t-ic"><svg class="i"><use href="#i-search"/></svg></div>
+        <h3>대충 쳐도 찾아요</h3>
+        <p class="d">표기·대소문자·띄어쓰기·오타가 달라도 같은 문서로 찾아요. 뜻이 비슷한 말과 문서 키워드로도 찾고, 없으면 아직 정리되지 않은 원본까지 넓혀요.</p>
+        <div class="demo">
+          <div class="variants"><code>o11yManager</code><code>O11Y MANAGER</code><code>o11y_manager</code><code>o11y-manger</code><code>관측 매니저</code></div>
+          <div class="arrow-row"><span>모두</span><svg class="i" style="width:18px;height:18px"><use href="#i-right"/></svg><code class="target">o11y-manager</code><span>문서로</span></div>
+        </div>
+      </article>
+
+      <article class="tile w2">
+        <div class="t-ic"><svg class="i"><use href="#i-history"/></svg></div>
+        <h3>근거가 보이는 문서</h3>
+        <p class="d">사실마다 출처와 시점이 붙고, 바뀐 기록을 보고 되돌릴 수 있어요.</p>
+        <div class="demo hist">
+          <div class="h-row"><span class="ln"></span><span class="tx"><b>회의록 반영</b> · 사실 3개</span><span class="ac">되돌리기</span></div>
+          <div class="h-row"><span class="ln"></span><span class="tx"><b>정정 반영</b> · 수집 주기</span><span class="ac">되돌리기</span></div>
+          <div class="h-row"><span class="ln"></span><span class="tx"><b>문서 생성</b></span><span></span></div>
+        </div>
+      </article>
+
+      <article class="tile w2">
+        <div class="t-ic"><svg class="i"><use href="#i-chat"/></svg></div>
+        <h3>AI에게 묻기</h3>
+        <p class="d">Claude가 wiki를 근거로 링크와 함께 답해요. 지난 대화를 이어서 물을 수 있어요.</p>
+        <div class="demo" style="gap:8px">
+          <span class="bubble me">배포 승인은 누가 해요?</span>
+          <span class="bubble ai">플랫폼팀 리드가 승인해요. <u>배포 절차</u></span>
+        </div>
+      </article>
+
+      <article class="tile w4">
+        <div class="t-ic"><svg class="i"><use href="#i-term"/></svg></div>
+        <h3>Claude Code에서 바로 써요</h3>
+        <p class="d">MCP로 연결하면 Claude Code가 작업 중에 wiki를 찾아 읽어요. 새 자료 올리기와 정정도 Claude Code에서 할 수 있어요.</p>
+        <div class="term"><span class="p">&gt;</span> o11y-agent 수집 주기 바꾸는 방법 알려줘
+<span class="c">  ⎿ wiki · search("o11y-agent 수집 주기", read_top=1)</span>
+  수집 주기는 60초예요(since 2026-09). values.yaml의
+  <span class="p">scrapeInterval</span>을 바꾼 뒤 다시 배포해요.</div>
+      </article>
+
+      <article class="tile w3">
+        <div class="t-ic"><svg class="i"><use href="#i-gauge"/></svg></div>
+        <h3>검색 품질을 계속 재요</h3>
+        <p class="d">팀원이 <b>못 찾았어요</b>를 누른 검색어로 Claude가 정답 문서를 골라요. 검색이 정답을 몇 위에 내놓는지 정리할 때마다 다시 재요.</p>
+        <div class="demo ranks">
+          <div class="rank"><span class="q">o11y 수집주기<small>내용으로</small></span><span class="pill ok">1위</span></div>
+          <div class="rank"><span class="q">tjqj<small>한/영 오타 → 서버</small></span><span class="pill warn">3위</span></div>
+          <div class="rank"><span class="q">핀옵스 레이팅<small>한국어 별칭</small></span><span class="pill bad">못 찾음</span></div>
+          <span class="ex">예시 화면이에요</span>
+        </div>
+      </article>
+
+      <article class="tile w3">
+        <div class="t-ic"><svg class="i"><use href="#i-bell"/></svg></div>
+        <h3>알림과 권한, 백업까지</h3>
+        <p class="d">자료 업로드·정정·문서 수정을 Teams 카드로 알려요. 역할에 따라 할 수 있는 일이 나뉘고, 매일 백업해요.</p>
+        <div class="demo" style="gap:14px">
+          <div class="notice"><span class="av"><svg class="i"><use href="#i-book"/></svg></span><div><b>새 자료가 올라왔어요</b><p>9월 운영 회의록 · 홍길동 · 방금</p><span class="btn">열어 보기</span></div></div>
+          <div class="roles"><span class="pill grey">viewer 조회</span><span class="pill blue">maintainer 올리기·수정</span><span class="pill blue">admin 승인·되돌리기</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="start" aria-labelledby="go-t">
+    <div>
+      <h2 id="go-t">지금 바로 써 보세요</h2>
+      <p class="sub">사내망에서 열려 있어요. 계정은 admin에게 받고, 첫 로그인 때 비밀번호를 바꿔요.</p>
+    </div>
+    <div class="start-list">
+      <div class="s-item"><span class="k">웹 주소</span><span class="v">http://wiki.example.internal</span></div>
+      <div class="s-item">
+        <span class="k">Claude Code 연결 · 설정 → 내 토큰에서 토큰을 만든 뒤 한 번 실행해요</span>
+        <div class="cmd">
+          <code id="mcp-cmd">claude mcp add --transport http wiki http://wiki.example.internal/mcp --header "Authorization: Bearer &lt;내 토큰&gt;"</code>
+          <button class="copy" type="button" data-copy="mcp-cmd">복사</button>
+        </div>
+      </div>
+    </div>
+  </section>
