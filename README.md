@@ -4,6 +4,8 @@ A Claude Code plugin that turns plans, designs, reports and guides into a clean 
 
 ![visual-docs preview](docs/preview-light.png)
 
+**[Live demo →](https://gutanbug.github.io/visual-docs/)**
+
 - One design language: generous whitespace, gray hierarchy, a single blue accent, rounded surfaces
 - Ready-made components: hero, flow, bento, stats, layers, tables, API list, decisions, roadmap
 - Light / dark mode and mobile layout out of the box
