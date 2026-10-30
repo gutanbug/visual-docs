@@ -1,7 +1,7 @@
 {
   "name": "visual-doc",
   "description": "Turn plans, designs, reports and guides into a one-page visual document (HTML Artifact). Includes design tokens, components and a build/check script.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "gutanbug",
     "url": "https://github.com/gutanbug"
